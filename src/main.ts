@@ -193,15 +193,15 @@ export default class MyPlugin extends Plugin {
                                 this.app.setting.openTabById(tab.id);
 
                                 try {
-                                    const find = document.evaluate(
-                                        `//div[text()="${result.resource.text}"]`,
-                                        tab.containerEl,
-                                        null,
-                                        XPathResult.UNORDERED_NODE_ITERATOR_TYPE,
-                                        null
+                                    const names =
+                                        tab.containerEl.querySelectorAll(
+                                            ".setting-item-name"
+                                        );
+                                    const el = Array.from(names).find(
+                                        (n) =>
+                                            n.textContent ==
+                                            result.resource.text
                                     );
-                                    const el =
-                                        find.iterateNext() as HTMLDivElement;
                                     if (!el) return;
 
                                     const setting = el.closest(".setting-item");
