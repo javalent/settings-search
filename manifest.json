@@ -1,6 +1,6 @@
 {
-    "id": "plugin-template",
-    "name": "",
+    "id": "settings-search",
+    "name": "Settings Search",
     "version": "0.0.0",
     "minAppVersion": "",
     "author": "Jeremy Valentine",

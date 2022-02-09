@@ -1,0 +1,12 @@
+.settings-search-container.vertical-tab-header-group {
+    padding-bottom: 0;
+}
+.vertical-tab-nav-item.settings-search-input {
+    background-color: inherit !important;
+}
+.settings-search-input .setting-item-control {
+    display: block;
+}
+.settings-search-input .search-input-container {
+    margin: 0;
+}

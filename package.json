@@ -26,19 +26,15 @@
         "@babel/preset-env": "^7.15.8",
         "@types/node": "^14.17.21",
         "babel-loader": "^8.2.2",
-        "copy-webpack-plugin": "^9.0.1",
-        "css-loader": "^5.2.7",
+        "builtin-modules": "^3.2.0",
         "dotenv": "^10.0.0",
         "esbuild": "^0.14.2",
-        "mini-css-extract-plugin": "^2.3.0",
+        "monkey-around": "^2.3.0",
         "obsidian": "latest",
         "standard-version": "^9.3.2",
         "svelte-preprocess": "^4.9.8",
         "ts-loader": "^9.2.3",
         "tslib": "^2.3.0",
-        "typescript": "^4.2.4",
-        "webpack": "^5.41.1",
-        "webpack-cli": "^4.7.2",
-        "webpack-node-externals": "^3.0.0"
+        "typescript": "^4.2.4"
     }
 }
