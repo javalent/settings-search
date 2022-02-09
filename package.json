@@ -1,0 +1,44 @@
+{
+    "name": "plugin-template",
+    "version": "0.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+        "dev": "node esbuild.config.mjs",
+        "build": "node esbuild.config.mjs production",
+        "web:dev": "set NODE_OPTIONS=--openssl-legacy-provider && webpack --config webpack.dev.js -w",
+        "web:build": "webpack",
+        "rollup:dev": "rollup --config rollup.config-dev.js -w",
+        "rollup:build": "rollup --config rollup.config.js",
+        "test": "jest",
+        "release": "standard-version",
+        "push": "git push --follow-tags origin"
+    },
+    "standard-version": {
+        "t": "",
+        "releaseCommitMessageFormat": "<plugin-template> Release: v{{currentTag}}"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@babel/core": "^7.15.8",
+        "@babel/preset-env": "^7.15.8",
+        "@types/node": "^14.17.21",
+        "babel-loader": "^8.2.2",
+        "copy-webpack-plugin": "^9.0.1",
+        "css-loader": "^5.2.7",
+        "dotenv": "^10.0.0",
+        "esbuild": "^0.14.2",
+        "mini-css-extract-plugin": "^2.3.0",
+        "obsidian": "latest",
+        "standard-version": "^9.3.2",
+        "svelte-preprocess": "^4.9.8",
+        "ts-loader": "^9.2.3",
+        "tslib": "^2.3.0",
+        "typescript": "^4.2.4",
+        "webpack": "^5.41.1",
+        "webpack-cli": "^4.7.2",
+        "webpack-node-externals": "^3.0.0"
+    }
+}

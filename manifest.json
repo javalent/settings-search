@@ -1,0 +1,10 @@
+{
+    "id": "plugin-template",
+    "name": "",
+    "version": "0.0.0",
+    "minAppVersion": "",
+    "author": "Jeremy Valentine",
+    "description": "",
+    "authorUrl": "",
+    "isDesktopOnly": false
+}
