@@ -4,44 +4,39 @@ import {
     Setting,
     SearchResult,
     Notice,
-    prepareSimpleSearch
+    prepareSimpleSearch,
+    SettingTab
 } from "obsidian";
-import { PluginSettings } from "./@types";
 
-const DEFAULT_SETTINGS: PluginSettings = {};
+import { around } from "monkey-around";
 
 declare module "obsidian" {
     interface App {
         setting: {
-            lastTabId: string;
             openTabById(id: string): void;
+            openTab(tab: SettingTab): void;
+
+            isPluginSettingTab(tab: SettingTab): boolean;
+            addSettingTab(tab: SettingTab): void;
+            removeSettingTab(tab: SettingTab): void;
+
+            activeTab: SettingTab;
+            lastTabId: string;
+
+            pluginTabs: PluginSettingTab[];
+            settingTabs: SettingTab[];
 
             tabContentContainer: HTMLDivElement;
             tabHeadersEl: HTMLDivElement;
-
-            settingTabs: SettingTab[];
-            pluginTabs: PluginSettingTab[];
         };
     }
     interface SettingTab {
         id: string;
         name: string;
+        navEl: HTMLElement;
     }
     interface PluginSettingTab {
         name: string;
-    }
-}
-
-type NestedRecord = {
-    [name: string]: string | NestedRecord;
-};
-
-declare global {
-    interface Window {
-        i18next: {
-            getResourceBundle(lang: string): { setting: NestedRecord };
-            t(key: string): string;
-        };
     }
 }
 
@@ -52,7 +47,6 @@ interface Resource {
     name: string;
 }
 export default class MyPlugin extends Plugin {
-    settings: PluginSettings;
     settingsSearchEl: HTMLDivElement = createDiv(
         "settings-search-container vertical-tab-header-group"
     );
@@ -66,10 +60,7 @@ export default class MyPlugin extends Plugin {
     resources: Resource[] = [];
 
     async onload() {
-        this.buildSearch();
         this.app.workspace.onLayoutReady(async () => {
-            await this.loadSettings();
-
             this.settingsResultsContainerEl.createEl("h3", {
                 text: "Settings Search Results"
             });
@@ -77,6 +68,7 @@ export default class MyPlugin extends Plugin {
                 "settings-search-results"
             );
 
+            this.buildSearch();
             this.buildResources();
             this.patchSettings();
         });
@@ -84,55 +76,119 @@ export default class MyPlugin extends Plugin {
     buildResources() {
         for (const tab of this.app.setting.settingTabs) {
             if (tab.id == "hotkeys") continue;
-            tab.display();
-            const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
-                ".setting-item:not(.setting-item-header)"
-            );
-            for (const el of Array.from(settings)) {
-                const text =
-                    el.querySelector<HTMLDivElement>(
-                        ".setting-item-name"
-                    )?.textContent;
-                const desc = el.querySelector<HTMLDivElement>(
-                    ".setting-item-description"
-                )?.textContent;
-                this.resources.push({
-                    tab: tab.id,
-                    name: tab.name,
-                    text,
-                    desc
-                });
-            }
-            tab.containerEl.detach();
+            this.getTabResources(tab);
         }
-
         for (const tab of this.app.setting.pluginTabs) {
-            tab.display();
-            const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
-                ".setting-item:not(.setting-item-header)"
-            );
-            for (const el of Array.from(settings)) {
-                const text =
-                    el.querySelector<HTMLDivElement>(
-                        ".setting-item-name"
-                    )?.textContent;
-                if (!text) continue;
-                const desc = el.querySelector<HTMLDivElement>(
-                    ".setting-item-description"
-                )?.textContent;
-                this.resources.push({
-                    tab: tab.id,
-                    name: tab.name,
-                    text,
-                    desc
-                });
-            }
-            tab.containerEl.detach();
+            this.getTabResources(tab);
         }
     }
+    settingCache: Map<string, Setting> = new Map();
+    addResourceToCache(resource: Resource) {
+        this.settingCache.set(
+            resource.text,
+            new Setting(createDiv())
+                .setName(resource.text)
+                .setDesc(resource.desc ?? "")
+                .addExtraButton((b) => {
+                    b.setIcon("forward-arrow").onClick(() => {
+                        this.showResult(resource);
+                    });
+                })
+        );
+    }
+    getResourceFromCache(resource: Resource) {
+        if (!this.settingCache.has(resource.text)) {
+            this.addResourceToCache(resource);
+        }
+        return this.settingCache.get(resource.text);
+    }
+    removeResourcesFromCache(resources: Resource[]) {
+        for (const resource of resources) {
+            this.settingCache.delete(resource.text);
+        }
+    }
+    getTabResources(tab: SettingTab) {
+        tab.display();
+        const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
+            ".setting-item:not(.setting-item-header)"
+        );
+        for (const el of Array.from(settings)) {
+            const text =
+                el.querySelector<HTMLDivElement>(
+                    ".setting-item-name"
+                )?.textContent;
+            if (!text) continue;
 
-    patchSettings() {}
-    searchAppended = false;
+            const desc = el.querySelector<HTMLDivElement>(
+                ".setting-item-description"
+            )?.textContent;
+
+            const resource = {
+                tab: tab.id,
+                name: tab.name,
+                text,
+                desc
+            };
+
+            this.resources.push(resource);
+            this.addResourceToCache(resource);
+        }
+        tab.containerEl.detach();
+    }
+
+    patchSettings() {
+        const self = this;
+
+        //Patch addSettingTab to capture changes to plugin settings.
+        this.register(
+            around(this.app.setting, {
+                addSettingTab: function (next) {
+                    return function (tab: SettingTab) {
+                        self.getTabResources(tab);
+                        return next.call(this, tab);
+                    };
+                }
+            })
+        );
+
+        //Patch removeSettingTab to capture changes to plugin settings.
+        this.register(
+            around(this.app.setting, {
+                removeSettingTab: function (next) {
+                    return function (tab: SettingTab) {
+                        if (this.isPluginSettingTab(tab)) {
+                            const removing = self.resources.filter(
+                                (t) => t.tab == tab.id
+                            );
+                            self.resources = self.resources.filter(
+                                (t) => t.tab != tab.id
+                            );
+                            self.removeResourcesFromCache(removing);
+                        }
+                        return next.call(this, tab);
+                    };
+                }
+            })
+        );
+
+        this.register(
+            around(this.app.setting, {
+                openTab: function (next) {
+                    return function (tab: SettingTab) {
+                        self.searchAppended = false;
+                        return next.call(this, tab);
+                    };
+                },
+                openTabById: function (next) {
+                    return function (tab: string) {
+                        self.searchAppended = false;
+                        return next.call(this, tab);
+                    };
+                }
+            })
+        );
+    }
+
     buildSearch() {
         this.app.setting.tabHeadersEl.prepend(this.settingsSearchEl);
         const tempSetting = new Setting(createDiv()).addSearch((s) => {
@@ -150,6 +206,8 @@ export default class MyPlugin extends Plugin {
             this.onChange(v);
         });
     }
+
+    searchAppended = false;
     onChange(v: string) {
         if (!v) {
             this.app.setting.openTabById(this.app.setting.lastTabId);
@@ -157,6 +215,7 @@ export default class MyPlugin extends Plugin {
             return;
         }
         if (!this.searchAppended) {
+            this.app.setting.activeTab.navEl.removeClass("is-active");
             this.app.setting.tabContentContainer.empty();
             this.app.setting.tabContentContainer.append(
                 this.settingsResultsContainerEl
@@ -165,31 +224,45 @@ export default class MyPlugin extends Plugin {
         }
         this.appendResults(this.performFuzzySearch(v));
     }
-    appendResults(results: { result: SearchResult; resource: Resource }[]) {
+    getMatchText(text: string, result: SearchResult) {
+        const matchElements: Record<number, HTMLElement> = {};
+        return createFragment((content) => {
+            for (let i = 0; i < text.length; i++) {
+                let match = result.matches.find((m) => m[0] === i);
+                if (match) {
+                    const index = result.matches.indexOf(match);
+                    if (!matchElements[index]) {
+                        matchElements[index] = createSpan(
+                            "suggestion-highlight"
+                        );
+                    }
+                    let element = matchElements[index];
+                    content.appendChild(element);
+                    element.appendText(text.substring(match[0], match[1]));
+
+                    i += match[1] - match[0] - 1;
+                    continue;
+                }
+
+                content.appendText(text[i]);
+            }
+        });
+    }
+    appendResults(results: Resource[]) {
         this.settingsResultsEl.empty();
         if (results.length) {
             const headers: Record<string, HTMLElement> = {};
-            for (const result of results) {
-                if (!(result.resource.tab in headers)) {
-                    headers[result.resource.tab] =
-                        this.settingsResultsEl.createDiv();
-                    new Setting(headers[result.resource.tab])
+            for (const resource of results) {
+                if (!(resource.tab in headers)) {
+                    headers[resource.tab] = this.settingsResultsEl.createDiv();
+                    new Setting(headers[resource.tab])
                         .setHeading()
-                        .setName(
-                            result.resource.name ??
-                                window.i18next.t(
-                                    `setting.${result.resource.tab}.name`
-                                )
-                        );
+                        .setName(resource.name);
                 }
-                new Setting(headers[result.resource.tab])
-                    .setName(result.resource.text)
-                    .setDesc(result.resource.desc ?? "")
-                    .addExtraButton((b) => {
-                        b.setIcon("magnifying-glass").onClick(() => {
-                            this.showResult(result.resource);
-                        });
-                    });
+
+                const setting = this.getResourceFromCache(resource);
+
+                headers[resource.tab].append(setting.settingEl);
             }
         } else {
             this.settingsResultsEl.setText("No results found :(");
@@ -251,13 +324,13 @@ export default class MyPlugin extends Plugin {
     }
 
     performFuzzySearch(input: string) {
-        const results: { result: SearchResult; resource: Resource }[] = [];
+        const results: Resource[] = [];
         for (const resource of this.resources) {
-            const result =
+            let result =
                 prepareSimpleSearch(input)(resource.text) ??
                 prepareSimpleSearch(input)(resource.desc);
             if (result) {
-                results.push({ result, resource });
+                results.push(resource);
             }
         }
         return results;
@@ -267,18 +340,5 @@ export default class MyPlugin extends Plugin {
         this.settingsSearchEl.detach();
         this.settingsResultsEl.detach();
         this.app.setting.openTabById(this.app.setting.lastTabId);
-    }
-
-    async loadSettings() {
-        this.settings = Object.assign(
-            {},
-            DEFAULT_SETTINGS,
-
-            await this.loadData()
-        );
-    }
-
-    async saveSettings() {
-        await this.saveData(this.settings);
     }
 }
