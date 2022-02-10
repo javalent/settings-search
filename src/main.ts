@@ -2,11 +2,9 @@ import {
     Plugin,
     SearchComponent,
     Setting,
-    moment,
-    prepareFuzzySearch,
-    FuzzyMatch,
     SearchResult,
-    Notice
+    Notice,
+    prepareSimpleSearch
 } from "obsidian";
 import { PluginSettings } from "./@types";
 
@@ -21,8 +19,16 @@ declare module "obsidian" {
             tabContentContainer: HTMLDivElement;
             tabHeadersEl: HTMLDivElement;
 
-            settingTabs: { id: string; containerEl: HTMLDivElement }[];
+            settingTabs: SettingTab[];
+            pluginTabs: PluginSettingTab[];
         };
+    }
+    interface SettingTab {
+        id: string;
+        name: string;
+    }
+    interface PluginSettingTab {
+        name: string;
     }
 }
 
@@ -39,13 +45,12 @@ declare global {
     }
 }
 
-type Resource = {
-    key: string;
-    text: string;
+interface Resource {
     tab: string;
-    desc?: string;
-};
-
+    text: string;
+    desc: string;
+    name: string;
+}
 export default class MyPlugin extends Plugin {
     settings: PluginSettings;
     settingsSearchEl: HTMLDivElement = createDiv(
@@ -72,66 +77,61 @@ export default class MyPlugin extends Plugin {
                 "settings-search-results"
             );
 
-            this.locale = moment.locale();
-
-            const resources = window.i18next.getResourceBundle(
-                this.locale
-            ).setting;
-
-            for (const [key, value] of Object.entries(resources)) {
-                if (typeof value == "string") continue;
-                this.resources.push(
-                    ...this.flattenResources(value, `setting.${key}`)
-                );
-            }
-            console.log(
-                "🚀 ~ file: main.ts ~ line 59 ~ this.resourceNames",
-                this.resources
-            );
+            this.buildResources();
+            this.patchSettings();
         });
     }
-    flattenResources(
-        resource: NestedRecord | string,
-        path?: string
-    ): Resource[] {
-        const nested: Resource[] = [];
-        if (typeof resource == "string") {
-            if (!/^(name$|section)/.test(resource)) {
-                const item: Resource = {
-                    key: resource,
-                    text: window.i18next.t(`${path}.${resource}`),
-                    tab: path.split(".")[1]
-                };
-                nested.push(item);
+    buildResources() {
+        for (const tab of this.app.setting.settingTabs) {
+            if (tab.id == "hotkeys") continue;
+            tab.display();
+            const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
+                ".setting-item:not(.setting-item-header)"
+            );
+            for (const el of Array.from(settings)) {
+                const text =
+                    el.querySelector<HTMLDivElement>(
+                        ".setting-item-name"
+                    )?.textContent;
+                const desc = el.querySelector<HTMLDivElement>(
+                    ".setting-item-description"
+                )?.textContent;
+                this.resources.push({
+                    tab: tab.id,
+                    name: tab.name,
+                    text,
+                    desc
+                });
             }
-        } else {
-            for (const [key, value] of Object.entries(resource)) {
-                if (typeof value == "object") {
-                    nested.push(
-                        ...this.flattenResources(value, `${path}.${key}`)
-                    );
-                } else if (!/^(name$|section)/.test(key)) {
-                    let item: Resource;
-                    if (/description$/.test(key)) {
-                        const existing = nested.find(
-                            (n) => key.replace("-description", "") == n.key
-                        );
-                        if (!existing) continue;
-                        existing.desc = value;
-                        continue;
-                    } else {
-                        item = {
-                            key,
-                            text: window.i18next.t(`${path}.${key}`),
-                            tab: path.split(".")[1]
-                        };
-                    }
-                    nested.push(item);
-                }
-            }
+            tab.containerEl.detach();
         }
-        return nested;
+
+        for (const tab of this.app.setting.pluginTabs) {
+            tab.display();
+            const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
+                ".setting-item:not(.setting-item-header)"
+            );
+            for (const el of Array.from(settings)) {
+                const text =
+                    el.querySelector<HTMLDivElement>(
+                        ".setting-item-name"
+                    )?.textContent;
+                if (!text) continue;
+                const desc = el.querySelector<HTMLDivElement>(
+                    ".setting-item-description"
+                )?.textContent;
+                this.resources.push({
+                    tab: tab.id,
+                    name: tab.name,
+                    text,
+                    desc
+                });
+            }
+            tab.containerEl.detach();
+        }
     }
+
+    patchSettings() {}
     searchAppended = false;
     buildSearch() {
         this.app.setting.tabHeadersEl.prepend(this.settingsSearchEl);
@@ -146,95 +146,116 @@ export default class MyPlugin extends Plugin {
 
         tempSetting.settingEl.detach();
 
-        this.search.setPlaceholder("Search core settings...").onChange((v) => {
-            if (!v) {
-                this.app.setting.openTabById(this.app.setting.lastTabId);
-                this.searchAppended = false;
-                return;
-            }
-            if (!this.searchAppended) {
-                this.app.setting.tabContentContainer.empty();
-                this.app.setting.tabContentContainer.append(
-                    this.settingsResultsContainerEl
-                );
-            }
-            const results = this.performFuzzySearch(v);
-            this.settingsResultsEl.empty();
-            if (results.length) {
-                const headers: Record<string, HTMLElement> = {};
-                for (const result of results) {
-                    if (!(result.resource.tab in headers)) {
-                        headers[result.resource.tab] =
-                            this.settingsResultsEl.createDiv();
-                        new Setting(headers[result.resource.tab])
-                            .setHeading()
-                            .setName(
+        this.search.setPlaceholder("Search settings...").onChange((v) => {
+            this.onChange(v);
+        });
+    }
+    onChange(v: string) {
+        if (!v) {
+            this.app.setting.openTabById(this.app.setting.lastTabId);
+            this.searchAppended = false;
+            return;
+        }
+        if (!this.searchAppended) {
+            this.app.setting.tabContentContainer.empty();
+            this.app.setting.tabContentContainer.append(
+                this.settingsResultsContainerEl
+            );
+            this.searchAppended = true;
+        }
+        this.appendResults(this.performFuzzySearch(v));
+    }
+    appendResults(results: { result: SearchResult; resource: Resource }[]) {
+        this.settingsResultsEl.empty();
+        if (results.length) {
+            const headers: Record<string, HTMLElement> = {};
+            for (const result of results) {
+                if (!(result.resource.tab in headers)) {
+                    headers[result.resource.tab] =
+                        this.settingsResultsEl.createDiv();
+                    new Setting(headers[result.resource.tab])
+                        .setHeading()
+                        .setName(
+                            result.resource.name ??
                                 window.i18next.t(
                                     `setting.${result.resource.tab}.name`
                                 )
-                            );
-                    }
-                    new Setting(headers[result.resource.tab])
-                        .setName(result.resource.text)
-                        .setDesc(result.resource.desc ?? "")
-                        .addExtraButton((b) => {
-                            b.setIcon("magnifying-glass").onClick(() => {
-                                this.search.setValue("");
-                                const tab = this.app.setting.settingTabs.find(
-                                    (t) => t.id == result.resource.tab
-                                );
-                                if (!tab) {
-                                    new Notice(
-                                        "There was an issue opening the setting tab."
-                                    );
-                                    return;
-                                }
-
-                                this.app.setting.openTabById(tab.id);
-
-                                try {
-                                    const names =
-                                        tab.containerEl.querySelectorAll(
-                                            ".setting-item-name"
-                                        );
-                                    const el = Array.from(names).find(
-                                        (n) =>
-                                            n.textContent ==
-                                            result.resource.text
-                                    );
-                                    if (!el) return;
-
-                                    const setting = el.closest(".setting-item");
-                                    if (!setting) return;
-
-                                    setting.scrollIntoView(true);
-
-                                    setting.addClass("is-flashing");
-                                    this.registerInterval(
-                                        window.setTimeout(
-                                            () =>
-                                                setting.removeClass(
-                                                    "is-flashing"
-                                                ),
-                                            3000
-                                        )
-                                    );
-                                } catch (e) {
-                                    console.error(e);
-                                }
-                            });
-                        });
+                        );
                 }
-            } else {
-                this.settingsResultsEl.setText("No results found :(");
+                new Setting(headers[result.resource.tab])
+                    .setName(result.resource.text)
+                    .setDesc(result.resource.desc ?? "")
+                    .addExtraButton((b) => {
+                        b.setIcon("magnifying-glass").onClick(() => {
+                            this.showResult(result.resource);
+                        });
+                    });
             }
-        });
+        } else {
+            this.settingsResultsEl.setText("No results found :(");
+        }
+    }
+
+    showResult(result: Resource) {
+        this.search.setValue("");
+        const tab =
+            this.app.setting.settingTabs.find((t) => t.id == result.tab) ??
+            this.app.setting.pluginTabs.find((t) => t.id == result.tab);
+        if (!tab) {
+            new Notice("There was an issue opening the setting tab.");
+            return;
+        }
+
+        this.app.setting.openTabById(tab.id);
+
+        try {
+            const names =
+                tab.containerEl.querySelectorAll(".setting-item-name");
+            const el = Array.from(names).find(
+                (n) => n.textContent == result.text
+            );
+            if (!el) return;
+
+            const setting = el.closest(".setting-item");
+            if (!setting) return;
+
+            if (tab.id == "obsidian-style-settings") {
+                let collapsed = setting.closest(".style-settings-container");
+                let previous = collapsed?.previousElementSibling;
+
+                while (
+                    previous != null &&
+                    previous.hasClass("is-collapsed") &&
+                    previous.hasClass("style-settings-heading")
+                ) {
+                    previous.removeClass("is-collapsed");
+                    collapsed = collapsed.parentElement?.closest(
+                        ".style-settings-container"
+                    );
+                    previous = collapsed?.previousElementSibling;
+                }
+            }
+
+            setting.scrollIntoView(true);
+
+            setting.addClass("is-flashing");
+            this.registerInterval(
+                window.setTimeout(
+                    () => setting.removeClass("is-flashing"),
+                    3000
+                )
+            );
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     performFuzzySearch(input: string) {
         const results: { result: SearchResult; resource: Resource }[] = [];
         for (const resource of this.resources) {
-            const result = prepareFuzzySearch(input)(resource.text);
+            const result =
+                prepareSimpleSearch(input)(resource.text) ??
+                prepareSimpleSearch(input)(resource.desc);
             if (result) {
                 results.push({ result, resource });
             }
