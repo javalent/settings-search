@@ -4,7 +4,7 @@
     "version": "0.0.1",
     "minAppVersion": "0.12.17",
     "author": "Jeremy Valentine",
-    "description": "",
-    "authorUrl": "",
+    "description": "Globally search settings in Obsidian.md",
+    "authorUrl": "https://github.com/valentine195",
     "isDesktopOnly": true
 }
