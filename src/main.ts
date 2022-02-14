@@ -88,7 +88,7 @@ export default class MyPlugin extends Plugin {
             resource.text,
             new Setting(createDiv())
                 .setName(resource.text)
-                .setDesc(resource.desc ?? "")
+                .setDesc(createFragment(e => e.createDiv().innerHTML = resource.desc))
                 .addExtraButton((b) => {
                     b.setIcon("forward-arrow").onClick(() => {
                         this.showResult(resource);
@@ -121,7 +121,7 @@ export default class MyPlugin extends Plugin {
 
             const desc = el.querySelector<HTMLDivElement>(
                 ".setting-item-description"
-            )?.textContent;
+            )?.innerHTML;
 
             const resource = {
                 tab: tab.id,
