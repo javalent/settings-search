@@ -5,8 +5,7 @@ import {
     SearchResult,
     Notice,
     prepareSimpleSearch,
-    SettingTab,
-    PluginManifest
+    SettingTab
 } from "obsidian";
 
 import { around } from "monkey-around";
@@ -75,6 +74,7 @@ export default class MyPlugin extends Plugin {
     locale: string;
 
     resources: Resource[] = [];
+    results: Resource[] = [];
 
     async onload() {
         this.app.workspace.onLayoutReady(async () => {
@@ -403,6 +403,7 @@ export default class MyPlugin extends Plugin {
                 results.push(resource);
             }
         }
+        this.results = results;
         return results;
     }
 
