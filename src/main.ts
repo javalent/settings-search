@@ -5,13 +5,25 @@ import {
     SearchResult,
     Notice,
     prepareSimpleSearch,
-    SettingTab
+    SettingTab,
+    PluginManifest
 } from "obsidian";
 
 import { around } from "monkey-around";
 
 declare module "obsidian" {
     interface App {
+        internalPlugins: {
+            plugins: Record<
+                string,
+                { _loaded: boolean; instance: { name: string; id: string } }
+            >;
+        };
+        plugins: {
+            manifests: Record<string, PluginManifest>;
+            plugins: Record<string, Plugin>;
+            getPlugin(id: string): Plugin;
+        };
         setting: {
             onOpen(): void;
 
@@ -32,13 +44,16 @@ declare module "obsidian" {
             tabHeadersEl: HTMLDivElement;
         };
     }
+    interface Plugin {
+        _loaded: boolean;
+    }
+    interface PluginSettingTab {
+        name: string;
+    }
     interface SettingTab {
         id: string;
         name: string;
         navEl: HTMLElement;
-    }
-    interface PluginSettingTab {
-        name: string;
     }
 }
 
@@ -84,23 +99,60 @@ export default class MyPlugin extends Plugin {
             this.getTabResources(tab);
         }
     }
+    get manifests() {
+        return Object.values(this.app.plugins.manifests);
+    }
     settingCache: Map<string, Setting> = new Map();
     addResourceToCache(resource: Resource) {
-        this.settingCache.set(
-            resource.text,
-            new Setting(createDiv())
-                .setName(resource.text)
-                .setDesc(
-                    createFragment(
-                        (e) => (e.createDiv().innerHTML = resource.desc)
-                    )
+        const setting = new Setting(createDiv())
+            .setName(resource.text)
+            .setDesc(
+                createFragment((e) => (e.createDiv().innerHTML = resource.desc))
+            );
+
+        if (resource.tab == "community-plugins") {
+            let plugin = this.manifests.find((p) => p.name == resource.text);
+            if (
+                plugin &&
+                this.app.plugins.getPlugin(plugin.id)?._loaded &&
+                this.app.setting.pluginTabs.find((t) => t.id == plugin.id)
+            ) {
+                setting.addExtraButton((b) => {
+                    b.setTooltip(`Open ${resource.text} Settings`).onClick(
+                        () => {
+                            this.app.setting.openTabById(plugin.id);
+                        }
+                    );
+                });
+            }
+        }
+        if (resource.tab == "plugins") {
+            const plugins = Object.values(this.app.internalPlugins.plugins);
+            const plugin = plugins.find(
+                (p) => p._loaded && p.instance.name == resource.text
+            );
+
+            if (
+                plugin &&
+                this.app.setting.pluginTabs.find(
+                    (t) => t.id == plugin.instance.id
                 )
-                .addExtraButton((b) => {
-                    b.setIcon("forward-arrow").onClick(() => {
-                        this.showResult(resource);
-                    });
-                })
-        );
+            ) {
+                setting.addExtraButton((b) => {
+                    b.setTooltip(`Open ${resource.text} Settings`).onClick(
+                        () => {
+                            this.app.setting.openTabById(plugin.instance.id);
+                        }
+                    );
+                });
+            }
+        }
+        setting.addExtraButton((b) => {
+            b.setIcon("forward-arrow").onClick(() => {
+                this.showResult(resource);
+            });
+        });
+        this.settingCache.set(resource.text, setting);
     }
     getResourceFromCache(resource: Resource) {
         if (!this.settingCache.has(resource.text)) {
