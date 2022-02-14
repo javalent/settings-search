@@ -13,6 +13,8 @@ import { around } from "monkey-around";
 declare module "obsidian" {
     interface App {
         setting: {
+            onOpen(): void;
+
             openTabById(id: string): void;
             openTab(tab: SettingTab): void;
 
@@ -88,7 +90,11 @@ export default class MyPlugin extends Plugin {
             resource.text,
             new Setting(createDiv())
                 .setName(resource.text)
-                .setDesc(createFragment(e => e.createDiv().innerHTML = resource.desc))
+                .setDesc(
+                    createFragment(
+                        (e) => (e.createDiv().innerHTML = resource.desc)
+                    )
+                )
                 .addExtraButton((b) => {
                     b.setIcon("forward-arrow").onClick(() => {
                         this.showResult(resource);
@@ -138,6 +144,18 @@ export default class MyPlugin extends Plugin {
 
     patchSettings() {
         const self = this;
+
+        this.register(
+            around(this.app.setting, {
+                onOpen: function (next) {
+                    return function () {
+                        next.apply(this);
+                        self.search.inputEl.focus();
+                        return next;
+                    };
+                }
+            })
+        );
 
         //Patch addSettingTab to capture changes to plugin settings.
         this.register(
