@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/valentine195/obsidian-settings-search/compare/1.0.0...1.0.1) (2022-02-15)
+
+
+### Bug Fixes
+
+* fixed issue where settings with no descriptions would break fuzzy search (close [#6](https://github.com/valentine195/obsidian-settings-search/issues/6)) ([fecf025](https://github.com/valentine195/obsidian-settings-search/commit/fecf02500f90437487aed33133c1cf4ae1ad3b24))
+
 ## [1.0.0](https://github.com/valentine195/obsidian-settings-search/compare/0.0.2...1.0.0) (2022-02-14)
 
 
