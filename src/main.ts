@@ -62,7 +62,7 @@ interface Resource {
     desc: string;
     name: string;
 }
-export default class MyPlugin extends Plugin {
+export default class SettingsSearch extends Plugin {
     settingsSearchEl: HTMLDivElement = createDiv(
         "settings-search-container vertical-tab-header-group"
     );
@@ -107,7 +107,9 @@ export default class MyPlugin extends Plugin {
         const setting = new Setting(createDiv())
             .setName(resource.text)
             .setDesc(
-                createFragment((e) => (e.createDiv().innerHTML = resource.desc))
+                createFragment(
+                    (e) => (e.createDiv().innerHTML = resource.desc ?? "")
+                )
             );
 
         if (resource.tab == "community-plugins") {
@@ -177,9 +179,9 @@ export default class MyPlugin extends Plugin {
                 )?.textContent;
             if (!text) continue;
 
-            const desc = el.querySelector<HTMLDivElement>(
-                ".setting-item-description"
-            )?.innerHTML;
+            const desc =
+                el.querySelector<HTMLDivElement>(".setting-item-description")
+                    ?.innerHTML ?? "";
 
             const resource = {
                 tab: tab.id,
