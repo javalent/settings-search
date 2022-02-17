@@ -194,6 +194,7 @@ export default class SettingsSearch extends Plugin {
             this.addResourceToCache(resource);
         }
         tab.containerEl.detach();
+        tab.hide();
     }
 
     patchSettings() {
