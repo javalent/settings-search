@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.4](https://github.com/valentine195/obsidian-settings-search/compare/1.0.3...1.0.4) (2022-02-23)
+
+
+### Bug Fixes
+
+* Fixed settings search placeholder ([a71e4bb](https://github.com/valentine195/obsidian-settings-search/commit/a71e4bb99fdf1aa40ddfa17c0e64d79bcd5cc2b5))
+
 ### [1.0.3](https://github.com/valentine195/obsidian-settings-search/compare/1.0.2...1.0.3) (2022-02-23)
 
 
