@@ -206,6 +206,7 @@ export default class SettingsSearch extends Plugin {
             this.resources.push(resource);
             this.addResourceToCache(resource);
         }
+        if (this.app.setting.activeTab?.id == tab.id) return;
         tab.containerEl.detach();
         tab.hide();
     }
