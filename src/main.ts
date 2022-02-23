@@ -425,6 +425,7 @@ export default class SettingsSearch extends Plugin {
     onunload() {
         this.settingsSearchEl.detach();
         this.settingsResultsEl.detach();
-        this.app.setting.openTabById(this.app.setting.lastTabId);
+        if (this.searchAppended)
+            this.app.setting.openTabById(this.app.setting.lastTabId);
     }
 }
