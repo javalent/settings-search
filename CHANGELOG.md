@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.3](https://github.com/valentine195/obsidian-settings-search/compare/1.0.2...1.0.3) (2022-02-23)
+
+
+### Bug Fixes
+
+* Loading plugin no longer closes the active settings tab ([317c1e2](https://github.com/valentine195/obsidian-settings-search/commit/317c1e2ad104f36d044c1c9ecc8e0182a0c16c96))
+* Settings indexing is no longer blocks the main process ([ee7b7b9](https://github.com/valentine195/obsidian-settings-search/commit/ee7b7b947cf3e00c987e122141e5ab19155a830b))
+* Unloading the plugin no longer re-loads the active settings tab ([5579a8d](https://github.com/valentine195/obsidian-settings-search/commit/5579a8d5d55a85465431509e9ce33da3040707fc))
+
 ### [1.0.2](https://github.com/valentine195/obsidian-settings-search/compare/1.0.1...1.0.2) (2022-02-17)
 
 
