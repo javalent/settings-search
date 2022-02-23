@@ -69,6 +69,9 @@ export default class SettingsSearch extends Plugin {
     settingsResultsContainerEl = createDiv(
         "settings-search-results-container vertical-tab-content"
     );
+    settingsNavItemContainer = this.settingsSearchEl
+        .createDiv("vertical-tab-header-group-items")
+        .createDiv("vertical-tab-nav-item settings-search-input");
     settingsResultsEl: HTMLDivElement;
     search: SearchComponent;
     locale: string;
@@ -87,16 +90,26 @@ export default class SettingsSearch extends Plugin {
 
             this.buildSearch();
             this.buildResources();
+            this.buildPluginResources();
             this.patchSettings();
         });
     }
+    tabIndex = 0;
+    pluginTabIndex = 0;
     buildResources() {
-        for (const tab of this.app.setting.settingTabs) {
-            if (tab.id == "hotkeys") continue;
+        const tab = this.app.setting.settingTabs[this.tabIndex];
+        if (tab) {
             this.getTabResources(tab);
+            this.tabIndex++;
+            setImmediate(() => this.buildResources());
         }
-        for (const tab of this.app.setting.pluginTabs) {
+    }
+    buildPluginResources() {
+        const tab = this.app.setting.pluginTabs[this.pluginTabIndex];
+        if (tab) {
             this.getTabResources(tab);
+            this.pluginTabIndex++;
+            setImmediate(() => this.buildPluginResources());
         }
     }
     get manifests() {
@@ -263,21 +276,19 @@ export default class SettingsSearch extends Plugin {
     }
 
     buildSearch() {
-        this.app.setting.tabHeadersEl.prepend(this.settingsSearchEl);
         const tempSetting = new Setting(createDiv()).addSearch((s) => {
             this.search = s;
         });
 
-        this.settingsSearchEl
-            .createDiv("vertical-tab-header-group-items")
-            .createDiv("vertical-tab-nav-item settings-search-input")
-            .append(tempSetting.controlEl);
+        this.settingsNavItemContainer.append(tempSetting.controlEl);
 
         tempSetting.settingEl.detach();
 
-        this.search.setPlaceholder("Search settings...").onChange((v) => {
+        this.search.onChange((v) => {
             this.onChange(v);
         });
+        this.search.setPlaceholder("Indexing settings...");
+        this.app.setting.tabHeadersEl.prepend(this.settingsSearchEl);
     }
 
     searchAppended = false;
