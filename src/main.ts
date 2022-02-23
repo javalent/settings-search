@@ -288,7 +288,7 @@ export default class SettingsSearch extends Plugin {
         this.search.onChange((v) => {
             this.onChange(v);
         });
-        this.search.setPlaceholder("Indexing settings...");
+        this.search.setPlaceholder("Search settings...");
         this.app.setting.tabHeadersEl.prepend(this.settingsSearchEl);
     }
 
