@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.5](https://github.com/valentine195/obsidian-settings-search/compare/1.0.4...1.0.5) (2022-03-03)
+
+
+### Bug Fixes
+
+* Hotkeys are now always at the bottom of results (close [#10](https://github.com/valentine195/obsidian-settings-search/issues/10)) ([625d64e](https://github.com/valentine195/obsidian-settings-search/commit/625d64e4af28c559a017c1d07075d1f0e3c3fefd))
+
 ### [1.0.4](https://github.com/valentine195/obsidian-settings-search/compare/1.0.3...1.0.4) (2022-02-23)
 
 
