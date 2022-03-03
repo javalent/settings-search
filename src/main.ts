@@ -339,7 +339,12 @@ export default class SettingsSearch extends Plugin {
             const headers: Record<string, HTMLElement> = {};
             for (const resource of results) {
                 if (!(resource.tab in headers)) {
-                    headers[resource.tab] = this.settingsResultsEl.createDiv();
+                    if (resource.tab == "hotkeys") {
+                        headers[resource.tab] = createDiv();
+                    } else {
+                        headers[resource.tab] =
+                            this.settingsResultsEl.createDiv();
+                    }
                     new Setting(headers[resource.tab])
                         .setHeading()
                         .setName(resource.name);
@@ -348,6 +353,9 @@ export default class SettingsSearch extends Plugin {
                 const setting = this.getResourceFromCache(resource);
 
                 headers[resource.tab].append(setting.settingEl);
+            }
+            if ("hotkeys" in headers) {
+                this.settingsResultsEl.appendChild(headers["hotkeys"]);
             }
         } else {
             this.settingsResultsEl.setText("No results found :(");
