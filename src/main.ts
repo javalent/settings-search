@@ -402,6 +402,12 @@ export default class SettingsSearch extends Plugin {
                 }
             }
 
+            let details = setting.closest("details");
+            while (details) {
+                details.setAttr("open", "open");
+                details = details.parentElement?.closest("details");
+            }
+
             setting.scrollIntoView(true);
 
             setting.addClass("is-flashing");
