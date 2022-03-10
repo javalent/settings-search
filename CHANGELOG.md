@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.6](https://github.com/valentine195/obsidian-settings-search/compare/1.0.5...1.0.6) (2022-03-10)
+
+
+### Bug Fixes
+
+* Adds check for nested details elements (close [#11](https://github.com/valentine195/obsidian-settings-search/issues/11)) ([0d07279](https://github.com/valentine195/obsidian-settings-search/commit/0d072796f9613357a8462a98431db89d2b7e4f29))
+* Fixes padding issue on default theme (close [#12](https://github.com/valentine195/obsidian-settings-search/issues/12)) ([13a3e98](https://github.com/valentine195/obsidian-settings-search/commit/13a3e985519de3cc01ee4b61f55e3e0b53d03a03))
+
 ### [1.0.5](https://github.com/valentine195/obsidian-settings-search/compare/1.0.4...1.0.5) (2022-03-03)
 
 
