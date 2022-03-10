@@ -1,6 +1,9 @@
 .settings-search-container.vertical-tab-header-group {
     padding-bottom: 0;
 }
+.settings-search-input {
+    padding-left: 6px;
+}
 .vertical-tab-nav-item.settings-search-input {
     background-color: inherit !important;
 }
