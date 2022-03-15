@@ -180,8 +180,9 @@ export default class SettingsSearch extends Plugin {
             this.settingCache.delete(resource.text);
         }
     }
-    getTabResources(tab: SettingTab) {
-        tab.display();
+    async getTabResources(tab: SettingTab) {
+        await tab.display();
+
         const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
             ".setting-item:not(.setting-item-header)"
         );
