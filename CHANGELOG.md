@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.7](https://github.com/valentine195/obsidian-settings-search/compare/1.0.6...1.0.7) (2022-03-15)
+
+
+### Bug Fixes
+
+* Wait for SettingTab display call before grabbing settings (close [#13](https://github.com/valentine195/obsidian-settings-search/issues/13)) ([b1adc7f](https://github.com/valentine195/obsidian-settings-search/commit/b1adc7f35a36bfe6424e88665e418bce66b1ff2c))
+
 ### [1.0.6](https://github.com/valentine195/obsidian-settings-search/compare/1.0.5...1.0.6) (2022-03-10)
 
 
