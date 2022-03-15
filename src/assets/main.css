@@ -13,3 +13,7 @@
 .settings-search-input .search-input-container {
     margin: 0;
 }
+
+.settings-search-results .setting-item.active {
+    background-color: var(--background-secondary);
+}

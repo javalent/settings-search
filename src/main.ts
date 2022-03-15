@@ -5,7 +5,8 @@ import {
     SearchResult,
     Notice,
     prepareSimpleSearch,
-    SettingTab
+    SettingTab,
+    Scope
 } from "obsidian";
 
 import { around } from "monkey-around";
@@ -88,6 +89,7 @@ export default class SettingsSearch extends Plugin {
                 "settings-search-results"
             );
 
+            this.buildScope();
             this.buildSearch();
             this.buildResources();
             this.buildPluginResources();
@@ -294,10 +296,48 @@ export default class SettingsSearch extends Plugin {
     }
 
     searchAppended = false;
+    activeIndex = -1;
+    activeSetting: Setting;
+    scope = new Scope(this.app.scope);
+    buildScope() {
+        this.scope.register([], "ArrowDown", () => {
+            console.log("arrowdown");
+            if (this.activeSetting) {
+                this.activeSetting.settingEl.removeClass("active");
+            }
+            this.activeIndex =
+                (((this.activeIndex + 1) % this.results.length) +
+                    this.results.length) %
+                this.results.length;
+            console.log(
+                "🚀 ~ file: main.ts ~ line 309 ~ this.activeIndex",
+                this.activeIndex,
+                this.results.length
+            );
+            const result = this.results[this.activeIndex];
+            this.activeSetting = this.getResourceFromCache(result);
+            this.activeSetting.settingEl.addClass("active");
+        });
+        this.scope.register([], "ArrowUp", () => {
+            console.log("arrow up");
+            if (this.activeSetting) {
+                this.activeSetting.settingEl.removeClass("active");
+            }
+            this.activeIndex =
+                (((this.activeIndex - 1) % this.results.length) +
+                    this.results.length) %
+                this.results.length;
+            const result = this.results[this.activeIndex];
+            this.activeSetting = this.getResourceFromCache(result);
+            this.activeSetting.settingEl.addClass("active");
+        });
+    }
     onChange(v: string) {
         if (!v) {
             this.app.setting.openTabById(this.app.setting.lastTabId);
             this.searchAppended = false;
+            this.app.keymap.popScope(this.scope);
+            this.activeIndex = -1;
             return;
         }
         if (!this.searchAppended) {
@@ -307,6 +347,8 @@ export default class SettingsSearch extends Plugin {
                 this.settingsResultsContainerEl
             );
             this.searchAppended = true;
+
+            this.app.keymap.pushScope(this.scope);
         }
         this.appendResults(this.performFuzzySearch(v));
     }
