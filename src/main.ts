@@ -266,12 +266,14 @@ export default class SettingsSearch extends Plugin {
                 openTab: function (next) {
                     return function (tab: SettingTab) {
                         self.searchAppended = false;
+                        self.app.keymap.popScope(self.scope);
                         return next.call(this, tab);
                     };
                 },
                 openTabById: function (next) {
                     return function (tab: string) {
                         self.searchAppended = false;
+                        self.app.keymap.popScope(self.scope);
                         return next.call(this, tab);
                     };
                 }
@@ -301,7 +303,6 @@ export default class SettingsSearch extends Plugin {
     scope = new Scope(this.app.scope);
     buildScope() {
         this.scope.register([], "ArrowDown", () => {
-            console.log("arrowdown");
             if (this.activeSetting) {
                 this.activeSetting.settingEl.removeClass("active");
             }
@@ -309,17 +310,10 @@ export default class SettingsSearch extends Plugin {
                 (((this.activeIndex + 1) % this.results.length) +
                     this.results.length) %
                 this.results.length;
-            console.log(
-                "🚀 ~ file: main.ts ~ line 309 ~ this.activeIndex",
-                this.activeIndex,
-                this.results.length
-            );
-            const result = this.results[this.activeIndex];
-            this.activeSetting = this.getResourceFromCache(result);
-            this.activeSetting.settingEl.addClass("active");
+
+            this.centerActiveSetting();
         });
         this.scope.register([], "ArrowUp", () => {
-            console.log("arrow up");
             if (this.activeSetting) {
                 this.activeSetting.settingEl.removeClass("active");
             }
@@ -327,28 +321,49 @@ export default class SettingsSearch extends Plugin {
                 (((this.activeIndex - 1) % this.results.length) +
                     this.results.length) %
                 this.results.length;
-            const result = this.results[this.activeIndex];
-            this.activeSetting = this.getResourceFromCache(result);
-            this.activeSetting.settingEl.addClass("active");
+
+            this.centerActiveSetting();
+        });
+        this.scope.register([], "Enter", () => {
+            if (this.activeSetting) {
+                this.showResult(this.results[this.activeIndex]);
+            }
         });
     }
+
+    centerActiveSetting() {
+        const result = this.results[this.activeIndex];
+        this.activeSetting = this.getResourceFromCache(result);
+        this.activeSetting.settingEl.addClass("active");
+
+        this.activeSetting.settingEl.scrollIntoView({
+            behavior: "auto",
+            block: "nearest"
+        });
+    }
+
     onChange(v: string) {
         if (!v) {
             this.app.setting.openTabById(this.app.setting.lastTabId);
             this.searchAppended = false;
             this.app.keymap.popScope(this.scope);
-            this.activeIndex = -1;
             return;
         }
         if (!this.searchAppended) {
+            this.activeIndex = -1;
+            this.app.keymap.popScope(this.scope);
+            this.app.keymap.pushScope(this.scope);
+            if (this.activeSetting) {
+                this.activeSetting.settingEl.removeClass("active");
+                this.activeSetting = null;
+            }
+
             this.app.setting.activeTab.navEl.removeClass("is-active");
             this.app.setting.tabContentContainer.empty();
             this.app.setting.tabContentContainer.append(
                 this.settingsResultsContainerEl
             );
             this.searchAppended = true;
-
-            this.app.keymap.pushScope(this.scope);
         }
         this.appendResults(this.performFuzzySearch(v));
     }
@@ -382,12 +397,11 @@ export default class SettingsSearch extends Plugin {
             const headers: Record<string, HTMLElement> = {};
             for (const resource of results) {
                 if (!(resource.tab in headers)) {
-                    if (resource.tab == "hotkeys") {
+                    /* if (resource.tab == "hotkeys") {
                         headers[resource.tab] = createDiv();
-                    } else {
-                        headers[resource.tab] =
-                            this.settingsResultsEl.createDiv();
-                    }
+                    } else { */
+                    headers[resource.tab] = this.settingsResultsEl.createDiv();
+                    /* } */
                     new Setting(headers[resource.tab])
                         .setHeading()
                         .setName(resource.name);
@@ -397,9 +411,9 @@ export default class SettingsSearch extends Plugin {
 
                 headers[resource.tab].append(setting.settingEl);
             }
-            if ("hotkeys" in headers) {
+            /* if ("hotkeys" in headers) {
                 this.settingsResultsEl.appendChild(headers["hotkeys"]);
-            }
+            } */
         } else {
             this.settingsResultsEl.setText("No results found :(");
         }
@@ -416,6 +430,7 @@ export default class SettingsSearch extends Plugin {
         }
 
         this.app.setting.openTabById(tab.id);
+        this.app.keymap.popScope(this.scope);
 
         try {
             const names =
@@ -466,17 +481,22 @@ export default class SettingsSearch extends Plugin {
     }
 
     performFuzzySearch(input: string) {
-        const results: Resource[] = [];
+        const results: Resource[] = [],
+            hotkeys: Resource[] = [];
         for (const resource of this.resources) {
             let result =
                 prepareSimpleSearch(input)(resource.text) ??
                 prepareSimpleSearch(input)(resource.desc);
             if (result) {
-                results.push(resource);
+                if (resource.tab == "hotkeys") {
+                    hotkeys.push(resource);
+                } else {
+                    results.push(resource);
+                }
             }
         }
-        this.results = results;
-        return results;
+        this.results = [...results, ...hotkeys];
+        return this.results;
     }
 
     onunload() {
