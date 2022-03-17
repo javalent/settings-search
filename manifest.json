@@ -6,5 +6,5 @@
     "author": "Jeremy Valentine",
     "description": "Globally search settings in Obsidian.md",
     "authorUrl": "https://github.com/valentine195",
-    "isDesktopOnly": true
+    "isDesktopOnly": false
 }

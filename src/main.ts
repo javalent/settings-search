@@ -6,7 +6,8 @@ import {
     Notice,
     prepareSimpleSearch,
     SettingTab,
-    Scope
+    Scope,
+    Platform
 } from "obsidian";
 
 import { around } from "monkey-around";
@@ -26,6 +27,7 @@ declare module "obsidian" {
         };
         setting: {
             onOpen(): void;
+            onClose(): void;
 
             openTabById(id: string): void;
             openTab(tab: SettingTab): void;
@@ -103,7 +105,7 @@ export default class SettingsSearch extends Plugin {
         if (tab) {
             this.getTabResources(tab);
             this.tabIndex++;
-            setImmediate(() => this.buildResources());
+            setTimeout(() => this.buildResources());
         }
     }
     buildPluginResources() {
@@ -111,7 +113,7 @@ export default class SettingsSearch extends Plugin {
         if (tab) {
             this.getTabResources(tab);
             this.pluginTabIndex++;
-            setImmediate(() => this.buildPluginResources());
+            setTimeout(() => this.buildPluginResources());
         }
     }
     get manifests() {
@@ -276,6 +278,14 @@ export default class SettingsSearch extends Plugin {
                         self.app.keymap.popScope(self.scope);
                         return next.call(this, tab);
                     };
+                },
+                onClose: function (next) {
+                    return function () {
+                        if (Platform.isMobile) {
+                            self.detach();
+                        }
+                        return next.call(this);
+                    };
                 }
             })
         );
@@ -341,11 +351,29 @@ export default class SettingsSearch extends Plugin {
             block: "nearest"
         });
     }
-
+    mobileContainers: HTMLElement[] = [];
+    detachFromMobile() {
+        if (Platform.isMobile) {
+            this.settingsResultsContainerEl.detach();
+            for (const header of this.mobileContainers) {
+                this.app.setting.tabHeadersEl.append(header);
+            }
+            this.search.setValue("");
+        }
+    }
+    detachFromDesktop() {
+        if (Platform.isDesktop) {
+            this.app.setting.openTabById(this.app.setting.lastTabId);
+        }
+    }
+    detach() {
+        this.detachFromDesktop();
+        this.detachFromMobile();
+        this.searchAppended = false;
+    }
     onChange(v: string) {
         if (!v) {
-            this.app.setting.openTabById(this.app.setting.lastTabId);
-            this.searchAppended = false;
+            this.detach();
             this.app.keymap.popScope(this.scope);
             return;
         }
@@ -358,11 +386,25 @@ export default class SettingsSearch extends Plugin {
                 this.activeSetting = null;
             }
 
-            this.app.setting.activeTab.navEl.removeClass("is-active");
-            this.app.setting.tabContentContainer.empty();
-            this.app.setting.tabContentContainer.append(
-                this.settingsResultsContainerEl
-            );
+            if (!Platform.isMobile) {
+                this.app.setting.activeTab.navEl.removeClass("is-active");
+                this.app.setting.tabContentContainer.empty();
+                this.app.setting.tabContentContainer.append(
+                    this.settingsResultsContainerEl
+                );
+            } else {
+                const headers =
+                    this.app.setting.tabHeadersEl.querySelectorAll<HTMLElement>(
+                        ".vertical-tab-header-group:not(.settings-search-container)"
+                    );
+                for (const header of Array.from(headers)) {
+                    this.mobileContainers.push(header);
+                    header.detach();
+                }
+                this.app.setting.tabHeadersEl.append(
+                    this.settingsResultsContainerEl
+                );
+            }
             this.searchAppended = true;
         }
         this.appendResults(this.performFuzzySearch(v));
@@ -431,6 +473,7 @@ export default class SettingsSearch extends Plugin {
 
         this.app.setting.openTabById(tab.id);
         this.app.keymap.popScope(this.scope);
+        setTimeout(() => this.detach());
 
         try {
             const names =
@@ -501,8 +544,10 @@ export default class SettingsSearch extends Plugin {
 
     onunload() {
         this.settingsSearchEl.detach();
+
         this.settingsResultsEl.detach();
-        if (this.searchAppended)
+        this.detach();
+        if (this.searchAppended && Platform.isDesktop)
             this.app.setting.openTabById(this.app.setting.lastTabId);
     }
 }
