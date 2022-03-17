@@ -1,6 +1,6 @@
 {
     "name": "settings-search",
-    "version": "1.0.7",
+    "version": "1.1.0",
     "description": "Globally search settings in Obsidian.md",
     "main": "main.js",
     "scripts": {

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/valentine195/obsidian-settings-search/compare/1.0.7...1.1.0) (2022-03-17)
+
+
+### Features
+
+* Added keyboard navigation to search results (close [#3](https://github.com/valentine195/obsidian-settings-search/issues/3)) ([f178598](https://github.com/valentine195/obsidian-settings-search/commit/f17859842d8d79237e9c64a6a1df818fb31dfa94))
+
 ### [1.0.7](https://github.com/valentine195/obsidian-settings-search/compare/1.0.6...1.0.7) (2022-03-15)
 
 
