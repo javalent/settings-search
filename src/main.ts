@@ -224,7 +224,7 @@ export default class SettingsSearch extends Plugin {
                 onOpen: function (next) {
                     return function () {
                         next.apply(this);
-                        self.search.inputEl.focus();
+                        if (!Platform.isMobile) self.search.inputEl.focus();
                         return next;
                     };
                 }
