@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/valentine195/obsidian-settings-search/compare/1.1.0...1.2.0) (2022-03-23)
+
+
+### Features
+
+* Settings Search is now on mobile! closes [#9](https://github.com/valentine195/obsidian-settings-search/issues/9) ([8838d41](https://github.com/valentine195/obsidian-settings-search/commit/8838d41f41428d89cdead96bd68a692834aa446c))
+
 ## [1.1.0](https://github.com/valentine195/obsidian-settings-search/compare/1.0.7...1.1.0) (2022-03-17)
 
 
