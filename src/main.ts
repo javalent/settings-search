@@ -473,7 +473,7 @@ export default class SettingsSearch extends Plugin {
 
         this.app.setting.openTabById(tab.id);
         this.app.keymap.popScope(this.scope);
-        setTimeout(() => this.detach());
+        this.detach();
 
         try {
             const names =
@@ -510,14 +510,10 @@ export default class SettingsSearch extends Plugin {
             }
 
             setting.scrollIntoView(true);
+            console.log("🚀 ~ file: main.ts:513 ~ setting", setting);
 
             setting.addClass("is-flashing");
-            this.registerInterval(
-                window.setTimeout(
-                    () => setting.removeClass("is-flashing"),
-                    3000
-                )
-            );
+            window.setTimeout(() => setting.removeClass("is-flashing"), 3000);
         } catch (e) {
             console.error(e);
         }
