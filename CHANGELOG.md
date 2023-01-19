@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/valentine195/obsidian-settings-search/compare/1.2.0...1.3.0) (2023-01-19)
+
+
+### Features
+
+* adds ability for other plugins to add settings ([f35ee83](https://github.com/valentine195/obsidian-settings-search/commit/f35ee83d98ccb1f504d08ea7674895b7414a6403))
+
+
+### Bug Fixes
+
+* fixes jump to setting ([27e2b41](https://github.com/valentine195/obsidian-settings-search/commit/27e2b4150df338087d43fc67a6b14c3f010a6a9b))
+
 ## [1.2.0](https://github.com/valentine195/obsidian-settings-search/compare/1.1.0...1.2.0) (2022-03-23)
 
 
