@@ -7,7 +7,8 @@ import {
     prepareSimpleSearch,
     SettingTab,
     Scope,
-    Platform
+    Platform,
+    setIcon
 } from "obsidian";
 
 import { around } from "monkey-around";
@@ -58,12 +59,21 @@ declare module "obsidian" {
         navEl: HTMLElement;
     }
 }
+declare global {
+    interface Window {
+        SettingsSearch?: {
+            addResource: SettingsSearch["addResource"];
+        };
+    }
+}
 
 interface Resource {
     tab: string;
+    //tab name
+    name: string;
     text: string;
     desc: string;
-    name: string;
+    external?: boolean;
 }
 export default class SettingsSearch extends Plugin {
     settingsSearchEl: HTMLDivElement = createDiv(
@@ -83,6 +93,10 @@ export default class SettingsSearch extends Plugin {
     results: Resource[] = [];
 
     async onload() {
+        (window["SettingsSearch"] = {
+            addResource: this.addResource.bind(this)
+        }) && this.register(() => delete window["SettingsSearch"]);
+
         this.app.workspace.onLayoutReady(async () => {
             this.settingsResultsContainerEl.createEl("h3", {
                 text: "Settings Search Results"
@@ -119,16 +133,40 @@ export default class SettingsSearch extends Plugin {
     get manifests() {
         return Object.values(this.app.plugins.manifests);
     }
-    settingCache: Map<string, Setting> = new Map();
-    addResourceToCache(resource: Resource) {
+    settingCache: Map<Resource, Setting> = new Map();
+    public addResourceToCache(resource: Resource) {
+        if (!resource || !resource.text || !resource.name || !resource.tab) {
+            return new Error("A valid resource must be provided.");
+        }
+
+        let name: DocumentFragment | string;
+        if (resource.external) {
+            name = createFragment((el) => {
+                setIcon(
+                    el.createSpan({
+                        attr: {
+                            "aria-label":
+                                "This setting was added by another plugin."
+                        }
+                    }),
+                    "info"
+                );
+                el.createSpan({ text: resource.name });
+            });
+        } else {
+            name = resource.name;
+        }
         const setting = new Setting(createDiv())
-            .setName(resource.text)
+            .setName(name)
             .setDesc(
                 createFragment(
                     (e) => (e.createDiv().innerHTML = resource.desc ?? "")
                 )
             );
+        if (resource.external) {
 
+            setting.settingEl.addClass("set-externally")
+        }
         if (resource.tab == "community-plugins") {
             let plugin = this.manifests.find((p) => p.name == resource.text);
             if (
@@ -171,18 +209,23 @@ export default class SettingsSearch extends Plugin {
                 this.showResult(resource);
             });
         });
-        this.settingCache.set(resource.text, setting);
+        this.settingCache.set(resource, setting);
     }
     getResourceFromCache(resource: Resource) {
-        if (!this.settingCache.has(resource.text)) {
+        if (!this.settingCache.has(resource)) {
             this.addResourceToCache(resource);
         }
-        return this.settingCache.get(resource.text);
+        return this.settingCache.get(resource);
     }
     removeResourcesFromCache(resources: Resource[]) {
         for (const resource of resources) {
-            this.settingCache.delete(resource.text);
+            this.settingCache.delete(resource);
         }
+    }
+    addResource(resource: Resource) {
+        resource.external = true;
+        this.resources.push(resource);
+        this.addResourceToCache(resource);
     }
     async getTabResources(tab: SettingTab) {
         await tab.display();
@@ -207,7 +250,6 @@ export default class SettingsSearch extends Plugin {
                 text,
                 desc
             };
-
             this.resources.push(resource);
             this.addResourceToCache(resource);
         }
@@ -439,11 +481,8 @@ export default class SettingsSearch extends Plugin {
             const headers: Record<string, HTMLElement> = {};
             for (const resource of results) {
                 if (!(resource.tab in headers)) {
-                    /* if (resource.tab == "hotkeys") {
-                        headers[resource.tab] = createDiv();
-                    } else { */
                     headers[resource.tab] = this.settingsResultsEl.createDiv();
-                    /* } */
+
                     new Setting(headers[resource.tab])
                         .setHeading()
                         .setName(resource.name);
@@ -510,7 +549,6 @@ export default class SettingsSearch extends Plugin {
             }
 
             setting.scrollIntoView(true);
-            console.log("🚀 ~ file: main.ts:513 ~ setting", setting);
 
             setting.addClass("is-flashing");
             window.setTimeout(() => setting.removeClass("is-flashing"), 3000);
