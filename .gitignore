@@ -16,3 +16,5 @@ data.json
 .DS_Store
 *dev.js
 main.js.LICENSE.txt
+
+.env
