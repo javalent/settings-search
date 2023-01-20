@@ -64,6 +64,7 @@ declare global {
         SettingsSearch?: {
             addResources: SettingsSearch["addResources"];
             removeResources: SettingsSearch["removeResources"];
+            removeTabResources: SettingsSearch["removeTabResources"];
         };
     }
 }
@@ -96,7 +97,8 @@ export default class SettingsSearch extends Plugin {
     async onload() {
         (window["SettingsSearch"] = {
             addResources: this.addResources.bind(this),
-            removeResources: this.removeResources.bind(this)
+            removeResources: this.removeResources.bind(this),
+            removeTabResources: this.removeTabResources.bind(this)
         }) && this.register(() => delete window["SettingsSearch"]);
 
         this.app.workspace.onLayoutReady(async () => {
