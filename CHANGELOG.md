@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.5](https://github.com/valentine195/obsidian-settings-search/compare/1.3.4...1.3.5) (2023-01-20)
+
+
+### Bug Fixes
+
+* adds setting search loaded event ([ae4c2fb](https://github.com/valentine195/obsidian-settings-search/commit/ae4c2fb5a1572feb76fbfe540653f15e659e7157))
+
 ### [1.3.3](https://github.com/valentine195/obsidian-settings-search/compare/1.3.2...1.3.3) (2023-01-20)
 
 
