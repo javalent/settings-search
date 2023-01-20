@@ -58,6 +58,12 @@ declare module "obsidian" {
         name: string;
         navEl: HTMLElement;
     }
+    interface Workspace {
+        on(
+            name: "settings-search-loaded",
+            callback: (...args: any[]) => any
+        ): EventRef;
+    }
 }
 declare global {
     interface Window {
@@ -114,8 +120,11 @@ export default class SettingsSearch extends Plugin {
             this.buildResources();
             this.buildPluginResources();
             this.patchSettings();
+            this.loaded = true;
+            this.app.workspace.trigger("settings-search-loaded");
         });
     }
+    loaded = false;
     tabIndex = 0;
     pluginTabIndex = 0;
     buildResources() {
