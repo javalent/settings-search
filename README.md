@@ -26,7 +26,15 @@ interface Resource {
     desc: string;
 }
 
-SettingsSearch.addResource(resource: Resource);
-SettingsSearch.removeResource(resource: Resource);
+/**
+ * Add an arbitrary number of resources to the settings search.
+ * Returns a function that can be used to remove the registered resources.
+ */ 
+SettingsSearch.addResources(...resources: Resource[]);
+
+/**
+ * Remove an arbitrary number of resources from the settings search.
+ */
+SettingsSearch.removeResources(...resources: Resource[]);
 
 ```

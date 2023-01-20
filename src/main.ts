@@ -62,8 +62,8 @@ declare module "obsidian" {
 declare global {
     interface Window {
         SettingsSearch?: {
-            addResource: SettingsSearch["addResource"];
-            removeResource: SettingsSearch["removeResource"];
+            addResources: SettingsSearch["addResources"];
+            removeResources: SettingsSearch["removeResources"];
         };
     }
 }
@@ -95,8 +95,8 @@ export default class SettingsSearch extends Plugin {
 
     async onload() {
         (window["SettingsSearch"] = {
-            addResource: this.addResource.bind(this),
-            removeResource: this.removeResource.bind(this)
+            addResources: this.addResources.bind(this),
+            removeResources: this.removeResources.bind(this)
         }) && this.register(() => delete window["SettingsSearch"]);
 
         this.app.workspace.onLayoutReady(async () => {
@@ -223,10 +223,15 @@ export default class SettingsSearch extends Plugin {
             this.settingCache.delete(resource);
         }
     }
-    addResource(resource: Resource) {
-        resource.external = true;
-        this.resources.push(resource);
-        this.addResourceToCache(resource);
+    addResources(...resources: Resource[]) {
+        for (const resource of resources) {
+            resource.external = true;
+            if (this.resources.find((k) => this.equivalent(resource, k)))
+                continue;
+            this.resources.push(resource);
+            this.addResourceToCache(resource);
+        }
+        return () => this.removeResources(...resources);
     }
     equivalent(resource1: Resource, resource2: Resource) {
         return (
@@ -237,18 +242,34 @@ export default class SettingsSearch extends Plugin {
             resource1.external == resource2.external
         );
     }
-    removeResource(resource: Resource) {
-        if (!resource || !resource.text || !resource.name || !resource.tab) {
-            return new Error("A valid resource must be provided.");
+    removeResources(...resources: Resource[]) {
+        const removing = [];
+        const keys = [...this.settingCache.keys()];
+        for (const resource of resources) {
+            if (
+                !resource ||
+                !resource.text ||
+                !resource.name ||
+                !resource.tab
+            ) {
+                continue;
+            }
+            resource.external = true;
+            this.resources = this.resources.filter(
+                (r) => !this.equivalent(resource, r)
+            );
+            removing.push(
+                ...keys.filter(
+                    (k) => k == resource || this.equivalent(resource, k)
+                )
+            );
         }
-        resource.external = true;
-        this.resources = this.resources.filter(
-            (r) => !this.equivalent(resource, r)
-        );
-        const keys = [...this.settingCache.keys()].filter((k) =>
-            this.equivalent(resource, k)
-        );
-        this.removeResourcesFromCache(keys);
+        this.removeResourcesFromCache(removing);
+    }
+    removeTabResources(tab: string) {
+        const removing = this.resources.filter((t) => t.tab == tab);
+        this.resources = this.resources.filter((t) => t.tab != tab);
+        this.removeResourcesFromCache(removing);
     }
     async getTabResources(tab: SettingTab) {
         await tab.display();
@@ -280,7 +301,6 @@ export default class SettingsSearch extends Plugin {
         tab.containerEl.detach();
         tab.hide();
     }
-
     patchSettings() {
         const self = this;
 
@@ -314,13 +334,7 @@ export default class SettingsSearch extends Plugin {
                 removeSettingTab: function (next) {
                     return function (tab: SettingTab) {
                         if (this.isPluginSettingTab(tab)) {
-                            const removing = self.resources.filter(
-                                (t) => t.tab == tab.id
-                            );
-                            self.resources = self.resources.filter(
-                                (t) => t.tab != tab.id
-                            );
-                            self.removeResourcesFromCache(removing);
+                            self.removeTabResources(tab.id);
                         }
                         return next.call(this, tab);
                     };
