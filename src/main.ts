@@ -155,7 +155,7 @@ export default class SettingsSearch extends Plugin {
                     }),
                     "info"
                 );
-                el.createSpan({ text: resource.name });
+                el.createSpan({ text: resource.text });
             });
         } else {
             name = resource.name;
