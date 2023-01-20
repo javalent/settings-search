@@ -63,6 +63,7 @@ declare global {
     interface Window {
         SettingsSearch?: {
             addResource: SettingsSearch["addResource"];
+            removeResource: SettingsSearch["removeResource"];
         };
     }
 }
@@ -94,7 +95,8 @@ export default class SettingsSearch extends Plugin {
 
     async onload() {
         (window["SettingsSearch"] = {
-            addResource: this.addResource.bind(this)
+            addResource: this.addResource.bind(this),
+            removeResource: this.removeResource.bind(this)
         }) && this.register(() => delete window["SettingsSearch"]);
 
         this.app.workspace.onLayoutReady(async () => {
@@ -164,8 +166,7 @@ export default class SettingsSearch extends Plugin {
                 )
             );
         if (resource.external) {
-
-            setting.settingEl.addClass("set-externally")
+            setting.settingEl.addClass("set-externally");
         }
         if (resource.tab == "community-plugins") {
             let plugin = this.manifests.find((p) => p.name == resource.text);
@@ -226,6 +227,28 @@ export default class SettingsSearch extends Plugin {
         resource.external = true;
         this.resources.push(resource);
         this.addResourceToCache(resource);
+    }
+    equivalent(resource1: Resource, resource2: Resource) {
+        return (
+            resource1.name == resource2.name &&
+            resource1.tab == resource2.tab &&
+            resource1.text == resource2.text &&
+            resource1.desc == resource2.desc &&
+            resource1.external == resource2.external
+        );
+    }
+    removeResource(resource: Resource) {
+        if (!resource || !resource.text || !resource.name || !resource.tab) {
+            return new Error("A valid resource must be provided.");
+        }
+        resource.external = true;
+        this.resources = this.resources.filter(
+            (r) => !this.equivalent(resource, r)
+        );
+        const keys = [...this.settingCache.keys()].filter((k) =>
+            this.equivalent(resource, k)
+        );
+        this.removeResourcesFromCache(keys);
     }
     async getTabResources(tab: SettingTab) {
         await tab.display();

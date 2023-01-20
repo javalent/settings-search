@@ -27,5 +27,6 @@ interface Resource {
 }
 
 SettingsSearch.addResource(resource: Resource);
+SettingsSearch.removeResource(resource: Resource);
 
 ```
