@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.1](https://github.com/valentine195/obsidian-settings-search/compare/1.3.0...1.3.1) (2023-01-20)
+
+
+### Bug Fixes
+
+* adds a way to remove external resources ([fe72419](https://github.com/valentine195/obsidian-settings-search/commit/fe724191a3b57d1d3558f5a024c0892aa3c2bd22))
+
 ## [1.3.0](https://github.com/valentine195/obsidian-settings-search/compare/1.2.0...1.3.0) (2023-01-19)
 
 
