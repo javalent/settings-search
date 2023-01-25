@@ -167,7 +167,7 @@ export default class SettingsSearch extends Plugin {
                 el.createSpan({ text: resource.text });
             });
         } else {
-            name = resource.name;
+            name = resource.text;
         }
         const setting = new Setting(createDiv())
             .setName(name)
