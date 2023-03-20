@@ -402,12 +402,34 @@ export default class SettingsSearch extends Plugin {
     activeSetting: Setting;
     scope = new Scope(this.app.scope);
     buildScope() {
+        this.scope.register(["Ctrl"], "N", () => {
+            if (this.activeSetting) {
+                this.activeSetting.settingEl.removeClass("active");
+            }
+            this.activeIndex =
+                (((this.activeIndex + 1) % this.results.length) +
+                    this.results.length) %
+                this.results.length;
+
+            this.centerActiveSetting();
+        });
         this.scope.register([], "ArrowDown", () => {
             if (this.activeSetting) {
                 this.activeSetting.settingEl.removeClass("active");
             }
             this.activeIndex =
                 (((this.activeIndex + 1) % this.results.length) +
+                    this.results.length) %
+                this.results.length;
+
+            this.centerActiveSetting();
+        });
+        this.scope.register(["Ctrl"], "P", () => {
+            if (this.activeSetting) {
+                this.activeSetting.settingEl.removeClass("active");
+            }
+            this.activeIndex =
+                (((this.activeIndex - 1) % this.results.length) +
                     this.results.length) %
                 this.results.length;
 
