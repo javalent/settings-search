@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.3.7](https://github.com/valentine195/obsidian-settings-search/compare/1.3.6...1.3.7) (2023-03-20)
+
+
+### Bug Fixes
+
+* adds Ctrl+P / Ctrl+N to navigate results (close [#32](https://github.com/valentine195/obsidian-settings-search/issues/32)) ([44a4c99](https://github.com/valentine195/obsidian-settings-search/commit/44a4c995fb9a4ba4e24872f346a484afe678e0d3))
+
 ### [1.3.5](https://github.com/valentine195/obsidian-settings-search/compare/1.3.4...1.3.5) (2023-01-20)
 
 
