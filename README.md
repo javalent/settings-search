@@ -1,47 +1,33 @@
-## Settings Search
+> 🥇 Our documentation has moved ***[here](https://plugins.javalent.com/settings-search)***.
+>
+> <a href='https://www.buymeacoffee.com/valentine195' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+---
 
-This plugin adds global search to the Obsidian settings.
+The Settings Search plugin adds global search functionality to the Obsidian settings, allowing users to quickly search for a particular setting. Keyboard navigation support is provided for ease of use.
+Additionally, plugin authors can add their settings dynamically using the API provided by the plugin.
+The plugin API includes three functions for this purpose: addResources(), removeResources(), and removeTabResources().
 
-That's it. That's the plugin.
+## Features
+- Global search functionality added to the Obsidian settings.
+- Keyboard navigation support using the up and down arrow keys to move through search results and enter to go to the setting.
+- Dynamic settings rendering support using the API for plugin authors to add their settings dynamically.
 
-<img src="https://raw.githubusercontent.com/valentine195/obsidian-settings-search/master/assets/ui.png" />
+### Quickstart
 
-### Keyboard Navigation
+1. Install the plugin from the Obsidian community plugins browser.
+2. Go to Obsidian Settings
+3. Search! That's it. That's the plugin.
 
-You can use the keyboard to navigate the search results. The up and down arrow keys can be used to move through the results, and the enter button will take you to the setting.
+Check out the **[plugin documentation](https://plugins.javalent.com/settings-search)** for more detailed instructions and examples.
 
-## Plugin Authors - Adding Settings Dynamically
+## Support
 
-This plugin works by rendering all of the setting tabs and grabbing any rendered setting.
+If you encounter any issues, want to give back and help out, or have suggestions for new features, file an issue on the **[GitHub repository](https://github.com/javalent/settings-search)**.
 
-Sometimes, settings are rendered dynamically and thus not available when a tab is rendered. If you want to interface with the plugin and add your settings dynamically, you can do so using the API. It is available on the `window` as `window.SettingsSearch`.
+### Complementary plugins
 
-```ts
-interface Resource {
-    //Id of your settings tab. This is usually the ID of your plugin as defined in the manifest.
-    tab: string;
-    //Name of your settings tab. This is usually the name of your plugin as defined in the manifest. This is used to organize the settings under headers when searching.
-    name: string;
-    //The name of the setting to add.
-    text: string;
-    //An optional description string to add to the setting.
-    desc: string;
-}
+If you're using Obsidian to better organize your notes, you may find some of my other plugins useful:
 
-/**
- * Add an arbitrary number of resources to the settings search.
- * Returns a function that can be used to remove the registered resources.
- */
-SettingsSearch.addResources(...resources: Resource[]);
-
-/**
- * Remove an arbitrary number of resources from the settings search.
- */
-SettingsSearch.removeResources(...resources: Resource[]);
-
-/**
- * Remove all resources associated with a particular SettingTab id.
- */
-SettingsSearch.removeTabResources(id: string)
-
-```
+- [Admonitions](https://github.com/javalent/admonitions) Create and customize code-block callouts.
+- [Prominent Bookmarked Files](https://github.com/javalent/prominent-files) Make your Bookmarked files stand out better on the file pane.
+- [Markdown Attributes](https://github.com/javalent/markdown-attributes) Add classes and IDs to Markdown elements.
