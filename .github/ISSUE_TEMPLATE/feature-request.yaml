@@ -1,6 +1,10 @@
 name: Feature Request
 description: Request a new feature
-labels: [ "type: Feature" ]
+labels: Feature
+assignees:
+ - Sigrunixia
+ - Valentine195
+title: "[Feature]: "
 body:
   - type: checkboxes
     id: duplicate-issues
