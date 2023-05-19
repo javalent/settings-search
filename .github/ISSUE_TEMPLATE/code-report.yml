@@ -1,6 +1,6 @@
 name: Code Report
 description: Report an Update to Code
-labels: Code
+labels: code
 title: "[Code]: "
 assignees:
  - Valentine195
