@@ -1,7 +1,15 @@
 > 🥇 Our documentation has moved ***[here](https://plugins.javalent.com/settings-search)***.
 >
 > <a href='https://www.buymeacoffee.com/valentine195' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi3.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
----
+> 
+> ---
+> 
+> **Development Status**: Maintenance Mode
+> 
+> Due to a glut of high priority Javalent plugin projects, this plugin is now entering maintenance mode for the time being. This is **not** a permanent status.
+> - PR's will be reviewed.
+> - *Yay* bugs will be reviewed and worked if able.
+> - Feature Requests **will not** be worked.
 
 The Settings Search plugin adds global search functionality to the Obsidian settings, allowing users to quickly search for a particular setting. Keyboard navigation support is provided for ease of use.
 Additionally, plugin authors can add their settings dynamically using the API provided by the plugin.
