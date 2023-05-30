@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.8](https://github.com/javalent/settings-search/compare/1.3.7...1.3.8) (2023-05-30)
+
+
+### Bug Fixes
+
+* **Readme:** Update Readme to 1.0 ([ecefe4d](https://github.com/javalent/settings-search/commit/ecefe4d1103a597e4949f9a8c3b73575c7fd6012)), closes [#35](https://github.com/javalent/settings-search/issues/35)
+
 ### [1.3.7](https://github.com/valentine195/obsidian-settings-search/compare/1.3.6...1.3.7) (2023-03-20)
 
 
