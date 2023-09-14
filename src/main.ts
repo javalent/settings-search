@@ -127,9 +127,10 @@ export default class SettingsSearch extends Plugin {
     loaded = false;
     tabIndex = 0;
     pluginTabIndex = 0;
+    seen: string[] = [];
     buildResources() {
         const tab = this.app.setting.settingTabs[this.tabIndex];
-        if (tab) {
+        if (tab && tab.id !== undefined && (!this.seen.includes(tab.id))) {
             this.getTabResources(tab);
             this.tabIndex++;
             setTimeout(() => this.buildResources());
@@ -284,7 +285,6 @@ export default class SettingsSearch extends Plugin {
     }
     async getTabResources(tab: SettingTab) {
         await tab.display();
-
         const settings = tab.containerEl.querySelectorAll<HTMLDivElement>(
             ".setting-item:not(.setting-item-header)"
         );
@@ -309,6 +309,7 @@ export default class SettingsSearch extends Plugin {
             this.addResourceToCache(resource);
         }
         if (this.app.setting.activeTab?.id == tab.id) return;
+        this.seen.push(tab.id);
         tab.containerEl.detach();
         tab.hide();
     }
@@ -332,7 +333,9 @@ export default class SettingsSearch extends Plugin {
             around(this.app.setting, {
                 addSettingTab: function (next) {
                     return function (tab: SettingTab) {
-                        self.getTabResources(tab);
+                        if (tab && tab.id !== undefined && (!this.seen.includes(tab.id))) {
+                            self.getTabResources(tab);
+                        }
                         return next.call(this, tab);
                     };
                 }
