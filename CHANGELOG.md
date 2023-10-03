@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.9](https://github.com/javalent/settings-search/compare/1.3.8...1.3.9) (2023-10-03)
+
+
+### Bug Fixes
+
+* Keep track of viewed plugin setting tabs ([65eb91c](https://github.com/javalent/settings-search/commit/65eb91cb5a734fd137b8e22ed46690300c48f77d))
+
 ## [1.3.8](https://github.com/javalent/settings-search/compare/1.3.7...1.3.8) (2023-05-30)
 
 
