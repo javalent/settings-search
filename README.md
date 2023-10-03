@@ -33,7 +33,6 @@ Check out the **[plugin documentation](https://plugins.javalent.com/settings-sea
 If you encounter any issues, want to give back and help out, or have suggestions for new features, file an issue on the **[GitHub repository](https://github.com/javalent/settings-search)**.
 
 ### Complementary plugins
-
 If you're using Obsidian to better organize your notes, you may find some of my other plugins useful:
 
 - [Admonitions](https://github.com/javalent/admonitions) Create and customize code-block callouts.
