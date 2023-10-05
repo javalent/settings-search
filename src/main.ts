@@ -333,7 +333,7 @@ export default class SettingsSearch extends Plugin {
             around(this.app.setting, {
                 addSettingTab: function (next) {
                     return function (tab: SettingTab) {
-                        if (tab && tab.id !== undefined && (!this.seen.includes(tab.id))) {
+                        if (tab && tab.id !== undefined && (!self.seen.includes(tab.id))) {
                             self.getTabResources(tab);
                         }
                         return next.call(this, tab);
